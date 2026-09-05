@@ -54,10 +54,18 @@ export class BillingService {
       }
     });
 
-    // Update shop enum
+    // Update shop enum dynamically
+    const planUpper = plan.id.toUpperCase();
     let planEnum: ShopPlan = ShopPlan.FREE;
-    if (planId === 'basic') planEnum = ShopPlan.STARTER;
-    if (planId === 'premium') planEnum = ShopPlan.PROFESSIONAL;
+    if (planUpper === 'STARTER' || planUpper === 'BASIC') {
+      planEnum = ShopPlan.STARTER;
+    } else if (planUpper === 'PROFESSIONAL' || planUpper === 'PREMIUM') {
+      planEnum = ShopPlan.PROFESSIONAL;
+    } else if (planUpper === 'ENTERPRISE') {
+      planEnum = ShopPlan.ENTERPRISE;
+    } else if (Object.values(ShopPlan).includes(planUpper as ShopPlan)) {
+      planEnum = planUpper as ShopPlan;
+    }
 
     await prisma.shop.update({
       where: { id: shopId },

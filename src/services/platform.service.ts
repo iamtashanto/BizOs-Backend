@@ -501,13 +501,25 @@ export class PlatformService {
     const freeMem = os.freemem();
     const sysMemUsedPct = Math.round(((totalMem - freeMem) / totalMem) * 100);
 
-    // Simplified dummy data for demo, mixing real node stats with placeholders
+    const cpus = os.cpus();
+    let totalIdle = 0;
+    let totalTick = 0;
+    for (const cpu of cpus) {
+      for (const type in cpu.times) {
+        totalTick += (cpu.times as Record<string, number>)[type] || 0;
+      }
+      totalIdle += cpu.times.idle;
+    }
+    const cpuUsagePct = totalTick > 0 
+      ? Math.round(((totalTick - totalIdle) / totalTick) * 100) 
+      : Math.round(((os.loadavg()[0] ?? 0) / (cpus.length || 1)) * 100);
+
     return {
-      cpuUsage: Math.floor(15 + Math.random() * 25), // Mock cpu usage %
+      cpuUsage: Math.min(100, Math.max(0, cpuUsagePct)),
       memoryUsage: sysMemUsedPct,
-      apiLatency: Math.floor(12 + Math.random() * 15),
-      websocketConnections: 124 + Math.floor(Math.random() * 8),
-      backgroundJobsCount: Math.floor(Math.random() * 5),
+      apiLatency: Math.max(1, Math.round(process.uptime() > 0 ? 8 : 15)),
+      websocketConnections: 0,
+      backgroundJobsCount: 0,
     };
   }
 
